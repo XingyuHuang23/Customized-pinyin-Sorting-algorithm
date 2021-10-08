@@ -1,2 +1,5 @@
 Assignment2/part3 unit test path:
 src\test\java\edu\neu\coe\info6205\SortTest.java
+
+Assignment3/step2 test main function path:
+src\test\java\edu\neu\coe\info6205\union_find\TestUF.java
