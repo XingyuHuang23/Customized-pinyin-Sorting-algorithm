@@ -15,29 +15,45 @@ import java.util.concurrent.ForkJoinPool;
  * TODO tidy it up a bit.
  */
 public class Main {
+    static  int arraySize = 1600000;
+    static int threadCount = 10;
+   static ForkJoinPool myPool = new ForkJoinPool(threadCount);
 
     public static void main(String[] args) {
         processArgs(args);
-        System.out.println("Degree of parallelism: " + ForkJoinPool.getCommonPoolParallelism());
+
+        System.out.println("Degree of parallelism: " + myPool.getParallelism());
+        System.out.println("ArraySize: " + arraySize);
         Random random = new Random();
-        int[] array = new int[2000000];
+        int[] array = new int[arraySize];
         ArrayList<Long> timeList = new ArrayList<>();
-        for (int j = 50; j < 100; j++) {
-            ParSort.cutoff = 10000 * (j + 1);
-            // for (int i = 0; i < array.length; i++) array[i] = random.nextInt(10000000);
-            long time;
+
+        //pre-warm
+        for(int i = 0; i < 10; i++) {
+            for(int j = 0; j < array.length; j++) {
+                array[i] = random.nextInt(100);
+            }
+
+            ParSort.sort(array, 0, array.length);
+        }
+        int k =2;
+        for (int j = 0; j < 8; j++) {
+            ParSort.cutoff = arraySize  *  k / 10;
+            //ParSort.cutoff = arraySize / 2000 * j; ParSort.cutoff单调递减，排序应该会越来越快，因为越多的部分使用了线程排序，更少部分系统排序
+
             long startTime = System.currentTimeMillis();
             for (int t = 0; t < 10; t++) {
                 for (int i = 0; i < array.length; i++) array[i] = random.nextInt(10000000);
                 ParSort.sort(array, 0, array.length);
             }
             long endTime = System.currentTimeMillis();
-            time = (endTime - startTime);
+
+            long time = (endTime - startTime);
             timeList.add(time);
 
 
-            System.out.println("cutoff：" + (ParSort.cutoff) + "\t\t10times Time:" + time + "ms");
-
+            System.out.println("cutoff：" + (ParSort.cutoff) + "\t\t10times Time:" + time + "ms"  + "\t\t percent: "+ Double.valueOf(ParSort.cutoff/arraySize));
+            k+=2;
         }
         try {
             FileOutputStream fis = new FileOutputStream("./src/result.csv");
@@ -73,7 +89,7 @@ public class Main {
     private static void processCommand(String x, String y) {
         if (x.equalsIgnoreCase("N")) setConfig(x, Integer.parseInt(y));
         else
-            // TODO sort this out
+        // TODO sort this out
             if (x.equalsIgnoreCase("P")) //noinspection ResultOfMethodCallIgnored
                 ForkJoinPool.getCommonPoolParallelism();
     }

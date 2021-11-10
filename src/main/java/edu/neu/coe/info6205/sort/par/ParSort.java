@@ -51,6 +51,6 @@ class ParSort {
                     sort(result, 0, to - from);
                     return result;
                 }
-        );
+        ,Main.myPool);
     }
 }
